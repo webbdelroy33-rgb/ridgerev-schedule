@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RidgeRev — Availability</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0b0c0f; color: #f1f3f8;
+    min-height: 100vh; padding: 0 0 60px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .header {
+    background: #000; border-bottom: 1px solid #1c1e24;
+    padding: 18px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo { font-size: 20px; font-weight: 800; letter-spacing: -.3px; color: #fff; }
+  .generated { font-size: 11px; color: #4a5568; }
+  .main { max-width: 600px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Timezone tabs */
+  .tz-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+  .tz-tab {
+    flex: 1; padding: 10px; border-radius: 8px; border: 2px solid #1e2535;
+    background: #131417; color: #64748b; font-size: 13px; font-weight: 700;
+    cursor: pointer; text-align: center; transition: all .15s;
+    letter-spacing: .04em;
+  }
+  .tz-tab.active { border-color: #00c896; color: #00c896; background: rgba(0,200,150,.08); }
+  .tz-tab:hover:not(.active) { border-color: #2d3748; color: #94a3b8; }
+
+  /* Day blocks */
+  .day-block { margin-bottom: 20px; }
+  .day-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: #4a5568; margin-bottom: 10px; padding-left: 2px;
+  }
+  .slots { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* Slot buttons */
+  .slot {
+    padding: 10px 16px; border-radius: 8px; border: 1.5px solid #1e2535;
+    background: #131417; color: #e2e8f0; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all .15s; user-select: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .slot:hover { border-color: #00c896; color: #00c896; }
+  .slot.booked {
+    border-color: #7f1d1d; background: rgba(239,68,68,.08);
+    color: #f87171; text-decoration: line-through; text-decoration-color: #f87171;
+  }
+  .slot.booked:hover { border-color: #ef4444; }
+
+  .no-slots {
+    color: #4a5568; font-size: 13px; padding: 12px 0; font-style: italic;
+  }
+
+  /* Reset button */
+  .reset-wrap { text-align: center; margin-top: 32px; }
+  .reset-btn {
+    background: transparent; border: 1px solid #2d3748; color: #4a5568;
+    padding: 8px 20px; border-radius: 6px; font-size: 12px; cursor: pointer;
+    transition: all .15s;
+  }
+  .reset-btn:hover { border-color: #4a5568; color: #64748b; }
+
+  .legend {
+    display: flex; gap: 20px; margin-bottom: 20px; font-size: 12px; color: #4a5568;
+    align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 3px; border: 1.5px solid;
+  }
+  .legend-dot.avail { border-color: #1e2535; background: #131417; }
+  .legend-dot.booked-dot { border-color: #7f1d1d; background: rgba(239,68,68,.08); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">RidgeRev</div>
+  <div class="generated">Updated Sat Jul 4, 1:01 PM CST</div>
+</div>
+
+<div class="main">
+
+  <div class="tz-tabs" id="tzTabs">
+    <div class="tz-tab active" onclick="setTz('CST')">CST</div>
+    <div class="tz-tab" onclick="setTz('MST')">MST</div>
+    <div class="tz-tab" onclick="setTz('EST')">EST</div>
+    <div class="tz-tab" onclick="setTz('PST')">PST</div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot avail"></div> Available
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot booked-dot"></div> Manually booked — tap to unbook
+    </div>
+  </div>
+
+  <div id="schedule"></div>
+
+  <div class="reset-wrap">
+    <button class="reset-btn" onclick="resetAll()">Clear all manual bookings</button>
+  </div>
+</div>
+
+<script>
+const SCHEDULE = {
+  "Sunday, Jul 5": {
+    "CST": [
+      "1:00 PM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM"
+    ],
+    "MST": [
+      "12:00 PM",
+      "1:00 PM",
+      "2:00 PM",
+      "3:00 PM"
+    ],
+    "EST": [
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM",
+      "5:00 PM"
+    ],
+    "PST": [
+      "11:00 AM",
+      "12:00 PM",
+      "1:00 PM",
+      "2:00 PM"
+    ]
+  },
+  "Monday, Jul 6": {
+    "CST": [
+      "12:00 PM",
+      "1:00 PM",
+      "5:00 PM"
+    ],
+    "MST": [
+      "11:00 AM",
+      "12:00 PM",
+      "4:00 PM"
+    ],
+    "EST": [
+      "1:00 PM",
+      "2:00 PM",
+      "6:00 PM"
+    ],
+    "PST": [
+      "10:00 AM",
+      "11:00 AM",
+      "3:00 PM"
+    ]
+  },
+  "Tuesday, Jul 7": {
+    "CST": [
+      "12:00 PM",
+      "1:00 PM",
+      "3:00 PM",
+      "4:00 PM",
+      "5:00 PM"
+    ],
+    "MST": [
+      "11:00 AM",
+      "12:00 PM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM"
+    ],
+    "EST": [
+      "1:00 PM",
+      "2:00 PM",
+      "4:00 PM",
+      "5:00 PM",
+      "6:00 PM"
+    ],
+    "PST": [
+      "10:00 AM",
+      "11:00 AM",
+      "1:00 PM",
+      "2:00 PM",
+      "3:00 PM"
+    ]
+  },
+  "Wednesday, Jul 8": {
+    "CST": [
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM",
+      "5:00 PM"
+    ],
+    "MST": [
+      "1:00 PM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM"
+    ],
+    "EST": [
+      "3:00 PM",
+      "4:00 PM",
+      "5:00 PM",
+      "6:00 PM"
+    ],
+    "PST": [
+      "12:00 PM",
+      "1:00 PM",
+      "2:00 PM",
+      "3:00 PM"
+    ]
+  }
+};
+const DAYS     = ["Sunday, Jul 5", "Monday, Jul 6", "Tuesday, Jul 7", "Wednesday, Jul 8"];
+const TZS      = ['CST','MST','EST','PST'];
+
+let currentTz = localStorage.getItem('ridgerev_tz') || 'CST';
+
+function slotKey(day, tz, time) {
+  return 'booked__' + day + '__' + tz + '__' + time;
+}
+
+function isBooked(day, tz, time) {
+  // A slot is booked in ALL timezones if any tz version of it is marked booked.
+  // Find the CST equivalent slot index
+  const cstSlots = (SCHEDULE[day] || {})['CST'] || [];
+  const tzSlots  = (SCHEDULE[day] || {})[tz]    || [];
+  const idx = tzSlots.indexOf(time);
+  if (idx === -1) return false;
+  const cstTime = cstSlots[idx];
+  return localStorage.getItem(slotKey(day, 'CST', cstTime)) === '1';
+}
+
+function toggleSlot(day, time) {
+  // Resolve to CST slot index
+  const tzSlots  = (SCHEDULE[day] || {})[currentTz] || [];
+  const cstSlots = (SCHEDULE[day] || {})['CST']      || [];
+  const idx = tzSlots.indexOf(time);
+  if (idx === -1) return;
+  const cstTime = cstSlots[idx];
+  const key = slotKey(day, 'CST', cstTime);
+  if (localStorage.getItem(key) === '1') {
+    localStorage.removeItem(key);
+  } else {
+    localStorage.setItem(key, '1');
+  }
+  render();
+}
+
+function setTz(tz) {
+  currentTz = tz;
+  localStorage.setItem('ridgerev_tz', tz);
+  document.querySelectorAll('.tz-tab').forEach((t, i) => {
+    t.classList.toggle('active', TZS[i] === tz);
+  });
+  render();
+}
+
+function render() {
+  const container = document.getElementById('schedule');
+  let html = '';
+  DAYS.forEach(day => {
+    const slots = (SCHEDULE[day] || {})[currentTz] || [];
+    html += `<div class="day-block">`;
+    html += `<div class="day-label">${day}</div>`;
+    html += `<div class="slots">`;
+    if (slots.length === 0) {
+      html += `<div class="no-slots">No available slots</div>`;
+    } else {
+      slots.forEach(t => {
+        const booked = isBooked(day, currentTz, t);
+        html += `<div class="slot${booked ? ' booked' : ''}" onclick="toggleSlot('${day}','${t}')">${t}</div>`;
+      });
+    }
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+}
+
+function resetAll() {
+  Object.keys(localStorage).filter(k => k.startsWith('booked__')).forEach(k => localStorage.removeItem(k));
+  render();
+}
+
+// Init
+document.querySelectorAll('.tz-tab').forEach((t, i) => {
+  t.classList.toggle('active', TZS[i] === currentTz);
+});
+render();
+</script>
+</body>
+</html>
