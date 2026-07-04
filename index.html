@@ -83,7 +83,7 @@
 
 <div class="header">
   <div class="logo">RidgeRev</div>
-  <div class="generated">Updated Sat Jul 4, 3:49 PM CST</div>
+  <div class="generated">Updated Sat Jul 4, 4:16 PM CST</div>
 </div>
 
 <div class="main">
@@ -115,23 +115,18 @@
 const SCHEDULE = {
   "Saturday, Jul 4": {
     "CST": [
-      "4:00 PM",
       "5:00 PM"
     ],
     "MST": [
-      "3:00 PM",
       "4:00 PM"
     ],
     "EST": [
-      "5:00 PM",
       "6:00 PM"
     ],
     "PST": [
-      "2:00 PM",
       "3:00 PM"
     ],
     "_iso": [
-      "2026-07-04T16:00:00-05:00",
       "2026-07-04T17:00:00-05:00"
     ]
   },
@@ -297,11 +292,28 @@ function setTz(tz) {
   render();
 }
 
-function isPast(day, slotIdx) {
-  // Browser checks current time — filters past slots on every refresh
-  const isoList = (SCHEDULE[day] || {})['_iso'] || [];
-  if (!isoList[slotIdx]) return false;
-  return new Date(isoList[slotIdx]) <= new Date();
+function isPast(day, timeStr) {
+  // Parse slot datetime from day label + time string — works without _iso data
+  // day label: "Saturday, Jul 4"  timeStr: "4:00 PM"
+  const now = new Date();
+  try {
+    const parts = day.match(/(\w+),\s+(\w+)\s+(\d+)/);
+    if (!parts) return false;
+    const monthStr = parts[2]; const dayNum = parseInt(parts[3]);
+    const year = now.getFullYear();
+    // Parse time
+    const tm = timeStr.match(/(\d+):(\d+)\s+(AM|PM)/i);
+    if (!tm) return false;
+    let h = parseInt(tm[1]); const m = parseInt(tm[2]); const ampm = tm[3].toUpperCase();
+    if (ampm === 'PM' && h !== 12) h += 12;
+    if (ampm === 'AM' && h === 12) h = 0;
+    // Build date in CST (UTC-5)
+    const MONTHS = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+    const mo = MONTHS[monthStr] ?? now.getMonth();
+    // CST offset: UTC-5 (CDT in summer = UTC-5)
+    const slotUTC = Date.UTC(year, mo, dayNum, h + 5, m);
+    return slotUTC <= now.getTime();
+  } catch(e) { return false; }
 }
 
 function render() {
@@ -309,15 +321,14 @@ function render() {
   let html = '';
   DAYS.forEach(day => {
     const slots = (SCHEDULE[day] || {})[currentTz] || [];
-    const futureIdxs = slots.map((_, i) => i).filter(i => !isPast(day, i));
+    const futureSlots = slots.filter(t => !isPast(day, t));
     html += `<div class="day-block">`;
     html += `<div class="day-label">${day}</div>`;
     html += `<div class="slots">`;
-    if (futureIdxs.length === 0) {
+    if (futureSlots.length === 0) {
       html += `<div class="no-slots">No available slots</div>`;
     } else {
-      futureIdxs.forEach(slotIdx => {
-        const t = slots[slotIdx];
+      futureSlots.forEach(t => {
         const booked = isBooked(day, currentTz, t);
         html += `<div class="slot${booked ? ' booked' : ''}" onclick="toggleSlot('${day}','${t}')">${t}</div>`;
       });
@@ -331,6 +342,9 @@ function resetAll() {
   Object.keys(localStorage).filter(k => k.startsWith('booked__')).forEach(k => localStorage.removeItem(k));
   render();
 }
+
+// Auto-refresh render every 5 min so past slots disappear without page reload
+setInterval(render, 5 * 60 * 1000);
 
 // Init
 document.querySelectorAll('.tz-tab').forEach((t, i) => {
