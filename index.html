@@ -83,7 +83,7 @@
 
 <div class="header">
   <div class="logo">RidgeRev</div>
-  <div class="generated">Updated Thu Jul 9, 10:00 PM CST</div>
+  <div class="generated">Updated Fri Jul 10, 12:00 AM CST</div>
 </div>
 
 <div class="main">
@@ -113,13 +113,6 @@
 
 <script>
 const SCHEDULE = {
-  "Thursday, Jul 9": {
-    "CST": [],
-    "MST": [],
-    "EST": [],
-    "PST": [],
-    "_iso": []
-  },
   "Friday, Jul 10": {
     "CST": [
       "2:00 PM",
@@ -366,9 +359,56 @@ const SCHEDULE = {
       "2026-07-15T17:00:00-05:00",
       "2026-07-15T18:00:00-05:00"
     ]
+  },
+  "Thursday, Jul 16": {
+    "CST": [
+      "9:00 AM",
+      "10:00 AM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM",
+      "5:00 PM",
+      "6:00 PM"
+    ],
+    "MST": [
+      "8:00 AM",
+      "9:00 AM",
+      "1:00 PM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM",
+      "5:00 PM"
+    ],
+    "EST": [
+      "10:00 AM",
+      "11:00 AM",
+      "3:00 PM",
+      "4:00 PM",
+      "5:00 PM",
+      "6:00 PM",
+      "7:00 PM"
+    ],
+    "PST": [
+      "7:00 AM",
+      "8:00 AM",
+      "12:00 PM",
+      "1:00 PM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM"
+    ],
+    "_iso": [
+      "2026-07-16T09:00:00-05:00",
+      "2026-07-16T10:00:00-05:00",
+      "2026-07-16T14:00:00-05:00",
+      "2026-07-16T15:00:00-05:00",
+      "2026-07-16T16:00:00-05:00",
+      "2026-07-16T17:00:00-05:00",
+      "2026-07-16T18:00:00-05:00"
+    ]
   }
 };
-const DAYS     = ["Thursday, Jul 9", "Friday, Jul 10", "Saturday, Jul 11", "Sunday, Jul 12", "Monday, Jul 13", "Tuesday, Jul 14", "Wednesday, Jul 15"];
+const DAYS     = ["Friday, Jul 10", "Saturday, Jul 11", "Sunday, Jul 12", "Monday, Jul 13", "Tuesday, Jul 14", "Wednesday, Jul 15", "Thursday, Jul 16"];
 const TZS      = ['CST','MST','EST','PST'];
 
 let currentTz = localStorage.getItem('ridgerev_tz') || 'CST';
