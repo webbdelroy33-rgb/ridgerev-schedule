@@ -84,7 +84,7 @@
 
 <div class="header">
   <div class="logo">RidgeRev</div>
-  <div class="generated">Updated Sun Aug 2, 6:38 PM CST</div>
+  <div class="generated">Updated Mon Aug 3, 12:00 AM CST</div>
 </div>
 
 <div class="main">
@@ -114,13 +114,6 @@
 
 <script>
 const SCHEDULE = {
-  "Sunday, Aug 2": {
-    "CST": [],
-    "MST": [],
-    "EST": [],
-    "PST": [],
-    "_iso": []
-  },
   "Monday, Aug 3": {
     "CST": [
       "12:00 PM",
@@ -312,9 +305,46 @@ const SCHEDULE = {
       "2026-08-08T15:00:00-05:00",
       "2026-08-08T16:00:00-05:00"
     ]
+  },
+  "Sunday, Aug 9": {
+    "CST": [
+      "12:00 PM",
+      "1:00 PM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM"
+    ],
+    "MST": [
+      "11:00 AM",
+      "12:00 PM",
+      "1:00 PM",
+      "2:00 PM",
+      "3:00 PM"
+    ],
+    "EST": [
+      "1:00 PM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM",
+      "5:00 PM"
+    ],
+    "PST": [
+      "10:00 AM",
+      "11:00 AM",
+      "12:00 PM",
+      "1:00 PM",
+      "2:00 PM"
+    ],
+    "_iso": [
+      "2026-08-09T12:00:00-05:00",
+      "2026-08-09T13:00:00-05:00",
+      "2026-08-09T14:00:00-05:00",
+      "2026-08-09T15:00:00-05:00",
+      "2026-08-09T16:00:00-05:00"
+    ]
   }
 };
-const DAYS     = ["Sunday, Aug 2", "Monday, Aug 3", "Tuesday, Aug 4", "Wednesday, Aug 5", "Thursday, Aug 6", "Friday, Aug 7", "Saturday, Aug 8"];
+const DAYS     = ["Monday, Aug 3", "Tuesday, Aug 4", "Wednesday, Aug 5", "Thursday, Aug 6", "Friday, Aug 7", "Saturday, Aug 8", "Sunday, Aug 9"];
 const TZS      = ['CST','MST','EST','PST'];
 
 let currentTz = localStorage.getItem('ridgerev_tz') || 'CST';
