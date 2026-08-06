@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta http-equiv="refresh" content="120"/>
 <title>RidgeRev — Availability</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -54,6 +53,11 @@
     color: #f87171; text-decoration: line-through; text-decoration-color: #f87171;
   }
   .slot.booked:hover { border-color: #ef4444; }
+  .slot.buffer {
+    border-color: #3a2f1a; background: rgba(234,179,8,.07);
+    color: #b08526; cursor: not-allowed; opacity: .85; text-decoration: none;
+  }
+  .slot.buffer:hover { border-color: #3a2f1a; color: #b08526; }
 
   .no-slots {
     color: #4a5568; font-size: 13px; padding: 12px 0; font-style: italic;
@@ -78,13 +82,14 @@
   }
   .legend-dot.avail { border-color: #1e2535; background: #131417; }
   .legend-dot.booked-dot { border-color: #7f1d1d; background: rgba(239,68,68,.08); }
+  .legend-dot.buffer-dot { border-color: #3a2f1a; background: rgba(234,179,8,.07); }
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo">RidgeRev</div>
-  <div class="generated">Updated Thu Aug 6, 5:04 AM CST</div>
+  <div class="generated">Updated Thu Aug 6, 1:00 PM CST</div>
 </div>
 
 <div class="main">
@@ -102,6 +107,9 @@
     </div>
     <div class="legend-item">
       <div class="legend-dot booked-dot"></div> Manually booked — tap to unbook
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot buffer-dot"></div> 1-hr buffer (auto, after a booked call)
     </div>
   </div>
 
@@ -364,6 +372,29 @@ function isBooked(day, tz, time) {
   return localStorage.getItem(slotKey(day, 'CST', cstTime)) === '1';
 }
 
+// 1-HOUR BUFFER (Kirk 2026-08-06): after a booked slot, grey out the slots within the next 105 min
+// (a 45-min call + 1-hour buffer in case it runs over) so the next call can't be booked on top of it.
+const BUFFER_MIN = 105;
+function _slotIso(day, tz, time) {
+  const tzSlots = (SCHEDULE[day] || {})[tz] || [];
+  const idx = tzSlots.indexOf(time);
+  const isos = (SCHEDULE[day] || {})['_iso'] || [];
+  return idx === -1 ? null : isos[idx];
+}
+function _bookedTimes(day) {
+  const cst = (SCHEDULE[day] || {})['CST'] || [];
+  const isos = (SCHEDULE[day] || {})['_iso'] || [];
+  const out = [];
+  cst.forEach((c, i) => { if (localStorage.getItem(slotKey(day, 'CST', c)) === '1' && isos[i]) out.push(new Date(isos[i]).getTime()); });
+  return out;
+}
+function isBuffered(day, tz, time) {
+  const iso = _slotIso(day, tz, time);
+  if (!iso) return false;
+  const t = new Date(iso).getTime();
+  return _bookedTimes(day).some(b => t > b && (t - b) <= BUFFER_MIN * 60000);
+}
+
 function toggleSlot(day, time) {
   // Resolve to CST slot index
   const tzSlots  = (SCHEDULE[day] || {})[currentTz] || [];
@@ -429,7 +460,12 @@ function render() {
     } else {
       futureSlots.forEach(t => {
         const booked = isBooked(day, currentTz, t);
-        html += `<div class="slot${booked ? ' booked' : ''}" onclick="toggleSlot('${day}','${t}')">${t}</div>`;
+        const buffered = !booked && isBuffered(day, currentTz, t);
+        if (buffered) {
+          html += `<div class="slot buffer" title="1-hr buffer after a booked call — kept open in case it runs over">${t}</div>`;
+        } else {
+          html += `<div class="slot${booked ? ' booked' : ''}" onclick="toggleSlot('${day}','${t}')">${t}</div>`;
+        }
       });
     }
     html += `</div></div>`;
