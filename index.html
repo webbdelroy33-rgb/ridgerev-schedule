@@ -89,7 +89,7 @@
 
 <div class="header">
   <div class="logo">RidgeRev</div>
-  <div class="generated" id="updatedAt">Updated Wed Oct 14, 5:21 PM CST</div>
+  <div class="generated" id="updatedAt">Updated Wed Oct 14, 5:22 PM CST</div>
 </div>
 
 <div class="main">
@@ -440,9 +440,7 @@ async function pullLatest() {
     const r = await fetch(location.pathname + '?t=' + Date.now(), {cache: 'no-store'});
     if (!r.ok) return;
     const txt = await r.text();
-    const m = txt.match(/let SCHEDULE = ([\s\S]*?);
-let DAYS\s*= (.*?);
-/);
+    const m = txt.match(/let SCHEDULE = ([\s\S]*?);\nlet DAYS\s*= (.*?);\n/);
     const u = txt.match(/id="updatedAt">([^<]*)</);
     if (!m) return;
     SCHEDULE = JSON.parse(m[1]);
