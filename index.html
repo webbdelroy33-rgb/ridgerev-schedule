@@ -89,7 +89,7 @@
 
 <div class="header">
   <div class="logo">RidgeRev</div>
-  <div class="generated">Updated Wed Oct 14, 5:08 PM CST</div>
+  <div class="generated" id="updatedAt">Updated Wed Oct 14, 5:21 PM CST</div>
 </div>
 
 <div class="main">
@@ -121,7 +121,7 @@
 </div>
 
 <script>
-const SCHEDULE = {
+let SCHEDULE = {
   "Wednesday, Oct 14": {
     "CST": [],
     "MST": [],
@@ -131,45 +131,60 @@ const SCHEDULE = {
   },
   "Thursday, Oct 15": {
     "CST": [
+      "12:00 PM",
       "2:00 PM",
+      "3:00 PM",
       "6:00 PM"
     ],
     "MST": [
+      "11:00 AM",
       "1:00 PM",
+      "2:00 PM",
       "5:00 PM"
     ],
     "EST": [
+      "1:00 PM",
       "3:00 PM",
+      "4:00 PM",
       "7:00 PM"
     ],
     "PST": [
+      "10:00 AM",
       "12:00 PM",
+      "1:00 PM",
       "4:00 PM"
     ],
     "_iso": [
+      "2026-10-15T12:00:00-05:00",
       "2026-10-15T14:00:00-05:00",
+      "2026-10-15T15:00:00-05:00",
       "2026-10-15T18:00:00-05:00"
     ]
   },
   "Friday, Oct 16": {
     "CST": [
       "12:00 PM",
+      "1:00 PM",
       "6:00 PM"
     ],
     "MST": [
       "11:00 AM",
+      "12:00 PM",
       "5:00 PM"
     ],
     "EST": [
       "1:00 PM",
+      "2:00 PM",
       "7:00 PM"
     ],
     "PST": [
       "10:00 AM",
+      "11:00 AM",
       "4:00 PM"
     ],
     "_iso": [
       "2026-10-16T12:00:00-05:00",
+      "2026-10-16T13:00:00-05:00",
       "2026-10-16T18:00:00-05:00"
     ]
   },
@@ -221,27 +236,32 @@ const SCHEDULE = {
     "CST": [
       "12:00 PM",
       "1:00 PM",
-      "2:00 PM"
+      "2:00 PM",
+      "3:00 PM"
     ],
     "MST": [
       "11:00 AM",
       "12:00 PM",
-      "1:00 PM"
+      "1:00 PM",
+      "2:00 PM"
     ],
     "EST": [
       "1:00 PM",
       "2:00 PM",
-      "3:00 PM"
+      "3:00 PM",
+      "4:00 PM"
     ],
     "PST": [
       "10:00 AM",
       "11:00 AM",
-      "12:00 PM"
+      "12:00 PM",
+      "1:00 PM"
     ],
     "_iso": [
       "2026-10-19T12:00:00-05:00",
       "2026-10-19T13:00:00-05:00",
-      "2026-10-19T14:00:00-05:00"
+      "2026-10-19T14:00:00-05:00",
+      "2026-10-19T15:00:00-05:00"
     ]
   },
   "Tuesday, Oct 20": {
@@ -282,7 +302,7 @@ const SCHEDULE = {
     ]
   }
 };
-const DAYS     = ["Wednesday, Oct 14", "Thursday, Oct 15", "Friday, Oct 16", "Saturday, Oct 17", "Sunday, Oct 18", "Monday, Oct 19", "Tuesday, Oct 20"];
+let DAYS     = ["Wednesday, Oct 14", "Thursday, Oct 15", "Friday, Oct 16", "Saturday, Oct 17", "Sunday, Oct 18", "Monday, Oct 19", "Tuesday, Oct 20"];
 const TZS      = ['CST','MST','EST','PST'];
 
 let currentTz = localStorage.getItem('ridgerev_tz') || 'CST';
@@ -410,6 +430,29 @@ function resetAll() {
 
 // Auto-refresh render every 5 min so past slots disappear without page reload
 setInterval(render, 5 * 60 * 1000);
+
+// ⛔ The times are baked into this file, so an open tab used to show what it loaded FOREVER, and GitHub
+// lets a browser reuse its copy for 10 min (Kirk 2026-10-14: "why it not refreshing"). Every 2 min, and
+// whenever the tab comes back into view, pull the live file past every cache and swap the slots in.
+// A failed pull keeps what is on screen — it never blanks the page.
+async function pullLatest() {
+  try {
+    const r = await fetch(location.pathname + '?t=' + Date.now(), {cache: 'no-store'});
+    if (!r.ok) return;
+    const txt = await r.text();
+    const m = txt.match(/let SCHEDULE = ([\s\S]*?);
+let DAYS\s*= (.*?);
+/);
+    const u = txt.match(/id="updatedAt">([^<]*)</);
+    if (!m) return;
+    SCHEDULE = JSON.parse(m[1]);
+    DAYS = JSON.parse(m[2]);
+    if (u) document.getElementById('updatedAt').textContent = u[1];
+    render();
+  } catch (e) {}
+}
+setInterval(pullLatest, 2 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pullLatest(); });
 
 // Init
 document.querySelectorAll('.tz-tab').forEach((t, i) => {
