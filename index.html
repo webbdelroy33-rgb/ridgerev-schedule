@@ -89,7 +89,7 @@
 
 <div class="header">
   <div class="logo">RidgeRev</div>
-  <div class="generated" id="updatedAt">Updated Sat Oct 24, 6:00 PM CST</div>
+  <div class="generated" id="updatedAt">Updated Sun Oct 25, 12:00 AM CST</div>
 </div>
 
 <div class="main">
@@ -122,13 +122,6 @@
 
 <script>
 let SCHEDULE = {
-  "Saturday, Oct 24": {
-    "CST": [],
-    "MST": [],
-    "EST": [],
-    "PST": [],
-    "_iso": []
-  },
   "Sunday, Oct 25": {
     "CST": [
       "12:00 PM",
@@ -350,9 +343,16 @@ let SCHEDULE = {
       "2026-10-30T17:00:00-05:00",
       "2026-10-30T18:00:00-05:00"
     ]
+  },
+  "Saturday, Oct 31": {
+    "CST": [],
+    "MST": [],
+    "EST": [],
+    "PST": [],
+    "_iso": []
   }
 };
-let DAYS     = ["Saturday, Oct 24", "Sunday, Oct 25", "Monday, Oct 26", "Tuesday, Oct 27", "Wednesday, Oct 28", "Thursday, Oct 29", "Friday, Oct 30"];
+let DAYS     = ["Sunday, Oct 25", "Monday, Oct 26", "Tuesday, Oct 27", "Wednesday, Oct 28", "Thursday, Oct 29", "Friday, Oct 30", "Saturday, Oct 31"];
 const TZS      = ['CST','MST','EST','PST'];
 
 let currentTz = localStorage.getItem('ridgerev_tz') || 'CST';
